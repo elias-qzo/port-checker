@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Network Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        table {
+            margin-top: 20px;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+        .ok {
+            color: green;
+            font-weight: bold;
+        }
+        .not-ok {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tests des ports</h1>
+    <button onclick="testPorts()">Tester les ports</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>Port</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="resultats"></tbody>
+    </table>
+
+    <script>
+        let servMqttTheThings="http://eu1.cloud.thethings.network"
+        let servPortQuizz="http://portquiz.net"
+
+        async function checkPort(url, port) {
+            try {
+                let response = await fetch(`${url}:${port}`, { method: "HEAD", mode: 'no-cors'});
+                return response.ok ? "OK" : "NON OK";
+            } catch (error) {
+                return "NON OK";
+            }
+        }
+
+        async function testPort(label, url, port) {
+            let table = document.getElementById("resultats");
+            let status = await checkPort(url, port)
+            let row = `<tr><td>${label}</td><td>${port}</td><td class="${status === "OK" ? "ok" : "not-ok"}">${status}</td></tr>`;
+            table.innerHTML += row;
+        }
+        
+        async function testPorts() {
+            let table = document.getElementById("resultats");
+            table.innerHTML = "";
+            await testPort("MQTT", servMqttTheThings, 1883);
+            await testPort("SSH", servPortQuizz, 22);
+            await testPort("Chirpstack", servPortQuizz, 8080);
+            await testPort("Node-RED", servPortQuizz, 1880);
+            await testPort("Influxdb", servPortQuizz, 8086);
+            await testPort("Grafana", servPortQuizz, 3000);
+        }
+
+
+    </script>
+</body>
+</html>
